@@ -40,7 +40,7 @@ NCKU Analysis and Implementation of Embedded Operating Systems Lab 1
   vTaskStartScheduler();
 ```
 
-使用`GPIO_PIN_SET`和`GPIO_PIN_RESET`控制亮暗，並用`vTaskDelay`控制2個燈切換間隔的時間(ms)。
+使用`GPIO_PIN_SET`和`GPIO_PIN_RESET`控制亮暗，並用`vTaskDelay`控制2個燈切換間隔的ticks。
 ```c=
 void LEDTask1(void *pvParameters) {
 	int flag = 0;
@@ -60,7 +60,7 @@ void LEDTask1(void *pvParameters) {
 }
 ```
 
-每隔1000 ms(1 sec)，讓紅燈切換亮暗。
+每隔1000 ticks，讓紅燈切換亮暗。
 ```c=
 void LEDTask2(void *pvParameters) {
 	int flag = 0;
