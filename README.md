@@ -21,7 +21,7 @@ NCKU Analysis and Implementation of Embedded Operating Systems Lab 1
 
 ## Concepts
 
-2個LED Task分別代表2個states，1個Button Task控制LED要在哪個state。
+2個LED Task分別代表2個states，1個Button Task用來控制LED要在哪個state。
 使用`uxPriority(定義這個任務的優先權，在FreeRTOS中0最低)`將Button Task的優先權設定得比LED Task高。
 ```c=
   // will be used to create the task
