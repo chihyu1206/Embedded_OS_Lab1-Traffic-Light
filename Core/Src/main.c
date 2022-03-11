@@ -214,22 +214,23 @@ void LEDTask2(void *pvParameters) {
 }
 
 void ButtonTask(void *pvParameters) {
-	int taskNum = 0;
+	int state = 0;
 	while (1) {
+		// software debouncing
 		while (!HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0)) {
 			vTaskDelay(5);
 		}
 		vTaskDelay(100);
 
 		if (HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0)) {
-			if (taskNum == 0) {
-				taskNum = 1;
+			if (state == 0) {
+				state ^= 1;
 				vTaskSuspend(xHandle1);
 				HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_RESET);
 				HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
 				vTaskResume(xHandle2);
 			} else {
-				taskNum = 0;
+				state ^= 1;
 				vTaskSuspend(xHandle2);
 				HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_RESET);
 				HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
