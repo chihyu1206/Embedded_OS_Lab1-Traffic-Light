@@ -216,13 +216,12 @@ void LEDTask2(void *pvParameters) {
 void ButtonTask(void *pvParameters) {
 	int state = 0;
 	while (1) {
-		// software debouncing
-		while (!HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0)) {
-			vTaskDelay(5);
-		}
-		vTaskDelay(100);
-
 		if (HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0)) {
+			// Software debouncing
+			vTaskDelay(10);
+			// Prevent from executing more than one time per a pressing action
+			while (HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0))
+			    ;
 			if (state == 0) {
 				state ^= 1;
 				vTaskSuspend(xHandle1);
