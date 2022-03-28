@@ -40,64 +40,60 @@ NCKU Analysis and Implementation of Embedded Operating Systems Lab 1
   vTaskStartScheduler();
 ```
 
-使用`GPIO_PIN_SET`和`GPIO_PIN_RESET`控制亮暗，並用`vTaskDelay`控制2個燈切換間隔的ticks。
+使用 `GPIO_PIN_SET` 和 `GPIO_PIN_RESET` 控制亮暗，並用 `vTaskDelay` 控制2個燈切換間隔的ticks。
 ```c=
 void LEDTask1(void *pvParameters) {
-	int flag = 0;
+    int flag = 0;
     while (1) {
         xQueueReceive(xQueue, &flag, 0);
         if (flag == 0) {
- 		   HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_SET);
- 		   vTaskDelay(5000);
- 		   HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_RESET);
- 		   
-           HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_SET);
- 		   vTaskDelay(5000);
- 		   HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
+	    HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_SET);
+            vTaskDelay(5000);
+            HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_RESET);
+ 	    HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_SET);
+ 	    vTaskDelay(5000);
+            HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
         }
     }
-    return;
 }
 ```
 
 每隔1000 ticks，讓紅燈切換亮暗。
 ```c=
 void LEDTask2(void *pvParameters) {
-	int flag = 0;
-	while (1) {
-		xQueueReceive(xQueue, &flag, 0);
-		if (flag == 1) {
+    int flag = 0;
+    while (1) {
+        xQueueReceive(xQueue, &flag, 0);
+        if (flag == 1) {
             HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_SET);
-			vTaskDelay(1000);
-			HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
-			vTaskDelay(1000);
-		}
-	}
-    return;
+            vTaskDelay(1000);
+            HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
+            vTaskDelay(1000);
+        }
+    }
 }
 ```
-使用`HAL_GPIO_ReadPin`來判斷是否有按按鈕。
-用`taskNum`來控制要執行哪個state {0: LEDTask 1, 1: LEDTask 2}，當要恢復`vTaskResume`其中1個state前，要先用`vTaskSuspend`將另個state暫停。
-切換後會將`taskNum`用`xQueueOverwrite`寫入queue，讓其中一個state得以執行。
+使用 `HAL_GPIO_ReadPin` 來判斷是否有按按鈕。
+用 `taskNum` 來控制要執行哪個state {0: LEDTask 1, 1: LEDTask 2}，當要恢復 `vTaskResume` 其中1個state前，要先用 `vTaskSuspend` 將另個state暫停。
+切換後會將 `taskNum` 用 `xQueueOverwrite` 寫入queue，讓其中一個state得以執行。
 ```c=
 void ButtonTask(void *pvParameters) {
-
-	int taskNum = 0;
-
+	int state = 0;
 	while (1) {
-		while (!HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0)) {
-			vTaskDelay(5);
-		}
-		vTaskDelay(100);
 		if (HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0)) {
-			if (taskNum == 0) {
-				taskNum = 1;
+			// Software debouncing
+			vTaskDelay(10);
+			// Prevent from executing more than one time per a pressing action
+			while (HAL_GPIO_ReadPin(Blue_Button_GPIO_Port, GPIO_PIN_0))
+			    ;
+			if (state == 0) {
+				state ^= 1;
 				vTaskSuspend(xHandle1);
 				HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_RESET);
 				HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
 				vTaskResume(xHandle2);
 			} else {
-				taskNum = 0;
+				state ^= 1;
 				vTaskSuspend(xHandle2);
 				HAL_GPIO_WritePin(Green_LED_GPIO_Port, GPIO_PIN_12, GPIO_PIN_RESET);
 				HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
@@ -107,7 +103,6 @@ void ButtonTask(void *pvParameters) {
 		}
 		vTaskDelay(100);
 	}
-    return;
 }
 ```
 
