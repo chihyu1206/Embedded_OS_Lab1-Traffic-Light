@@ -196,7 +196,6 @@ void LEDTask1(void *pvParameters) {
  		   HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
         }
     }
-    return;
 }
 
 void LEDTask2(void *pvParameters) {
@@ -210,7 +209,6 @@ void LEDTask2(void *pvParameters) {
 			vTaskDelay(1000);
 		}
 	}
-    return;
 }
 
 void ButtonTask(void *pvParameters) {
@@ -235,11 +233,10 @@ void ButtonTask(void *pvParameters) {
 				HAL_GPIO_WritePin(Red_LED_GPIO_Port, GPIO_PIN_14, GPIO_PIN_RESET);
 				vTaskResume(xHandle1);
 			}
-			xQueueOverwrite(xQueue, &taskNum);
+			xQueueSend(xQueue, &state, 0);
 		}
 		vTaskDelay(100);
 	}
-    return;
 }
 /* USER CODE END 4 */
 
